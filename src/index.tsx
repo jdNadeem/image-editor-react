@@ -1,12 +1,41 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import { Router } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import {createStore, applyMiddleware, compose} from "redux";
+import { mainReducer } from './reducers';
+import thunk from 'redux-thunk';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import Root from './views/index';
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+import createHistory from 'history/createBrowserHistory';
+
+import { ROOT_NODE } from './constants';
+const history = createHistory();
+// const createStoreWithMiddleware = createStore(
+//   mainReducer,
+//   {},
+//   applyMiddleware(thunk)
+// );
+const createStoreWithMiddleware = compose(applyMiddleware(thunk))(createStore)(mainReducer);
+const render = () => {
+  ReactDOM.render(
+    (
+      <Provider store={createStoreWithMiddleware}>
+        <Router history={history}>
+          <Root />
+        </Router>
+      </Provider>
+    ),
+    ROOT_NODE as HTMLElement,
+  );
+};
+
+if (module.hot) {
+  module.hot.accept(() => {
+    ReactDOM.unmountComponentAtNode(ROOT_NODE as HTMLElement);
+    render();
+  });
+}
+
+render();
